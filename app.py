@@ -168,14 +168,16 @@ def formulario_asignacion(accion_tipo="nueva", nombre_equipo_editar=None, id_tec
 
     st.markdown("### 7. Firmas Digitales 🔐")
     
-    # Firma Empleado
+    # ---------------------------------------------------------
+    # FIRMA DEL EMPLEADO (MEJORADA)
+    # ---------------------------------------------------------
     st.markdown("**FIRMA DEL EMPLEADO**")
     f1, f2, f3 = st.columns(3)
     nombre_empleado = f1.text_input("Nombre del Empleado", key=f"nombre_empleado_firma_{accion_tipo}")
     cc_empleado = f2.text_input("Documento Empleado", key=f"cc_empleado_firma_{accion_tipo}")
     cargo_empleado = f3.text_input("Cargo Empleado", key=f"cargo_empleado_firma_{accion_tipo}")
     
-    # Checkboxes de consentimiento (CRÍTICO)
+    # Checkboxes de consentimiento
     checkbox_col1, checkbox_col2 = st.columns(2)
     with checkbox_col1:
         consentimiento_recibido = st.checkbox(
@@ -188,34 +190,28 @@ def formulario_asignacion(accion_tipo="nueva", nombre_equipo_editar=None, id_tec
             key=f"resp_empleado_{accion_tipo}"
         )
     
-    # Opción de firma dibujada para el empleado
+    # Lienzo de dibujo visible y con fondo gris claro
     st.markdown("**Firma Electrónica (Opcional)**")
-    tab1_emp, tab2_emp = st.tabs(["📝 Sin firma dibujada", "✍️ Dibujar firma"])
+    st.caption("📱 Dibuja tu firma en el recuadro gris de abajo. Si accedes desde un celular, usa tu dedo.")
     
-    firma_empleado_canvas = None
-    with tab2_emp:
-        st.info("📱 Puedes dibujar tu firma aquí. Si accedes desde un celular, dibuja con tu dedo.")
-        
-        firma_empleado_canvas = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=2,
-            stroke_color="#000000",
-            background_color="#ffffff",
-            height=150,
-            width=400,
-            drawing_mode="freedraw",
-            key=f"firma_emp_canvas_{accion_tipo}",
-        )
-        
-        if firma_empleado_canvas.image_data is not None:
-            st.success("✅ Firma capturada correctamente")
+    firma_empleado_canvas = st_canvas(
+        fill_color="rgba(255, 255, 255, 1)", # Relleno interior invisible
+        stroke_width=2,
+        stroke_color="#000000",              # Tinta negra
+        background_color="#eeeeee",          # FONDO GRIS CLARO para que sea visible
+        height=150,                          
+        width=350,                           # Ancho ajustado para móviles
+        drawing_mode="freedraw",
+        key=f"firma_emp_canvas_{accion_tipo}",
+    )
     
     st.divider()
     
-    # Firma Técnico Helpdesk
+    # ---------------------------------------------------------
+    # FIRMA DEL TÉCNICO (MEJORADA)
+    # ---------------------------------------------------------
     st.markdown("**FIRMA DEL ANALISTA HELPDESK**")
     
-    # Selector de técnico (si existen registrados)
     tecnicos = get_tecnicos_activos()
     if tecnicos:
         tecnico_seleccionado = st.selectbox(
@@ -238,7 +234,6 @@ def formulario_asignacion(accion_tipo="nueva", nombre_equipo_editar=None, id_tec
     cc_tecnico = f5.text_input("Documento Técnico", key=f"cc_tecnico_firma_{accion_tipo}")
     cargo_tecnico = f6.text_input("Cargo Técnico", key=f"cargo_tecnico_firma_{accion_tipo}")
     
-    # PIN opcional para firma técnica (extra seguridad)
     st.markdown("**Seguridad de Firma Técnica (Opcional)**")
     usar_pin = st.checkbox("Usar PIN de 4 dígitos para mayor seguridad", key=f"usar_pin_{accion_tipo}")
     pin_tecnico = None
@@ -252,29 +247,19 @@ def formulario_asignacion(accion_tipo="nueva", nombre_equipo_editar=None, id_tec
             elif pin_ingreso:
                 pin_tecnico = pin_ingreso
     
-    # Opción de firma dibujada para el técnico
     st.markdown("**Firma Electrónica (Opcional)**")
-    tab1_tec, tab2_tec = st.tabs(["📝 Sin firma dibujada", "✍️ Dibujar firma"])
+    st.caption("📱 Dibuja tu firma en el recuadro gris de abajo.")
     
-    firma_tecnico_canvas = None
-    with tab2_tec:
-        st.info("📱 Puedes dibujar tu firma aquí. Si accedes desde un celular, dibuja con tu dedo.")
-        
-        firma_tecnico_canvas = st_canvas(
-            fill_color="rgba(255, 165, 0, 0.3)",
-            stroke_width=2,
-            stroke_color="#000000",
-            background_color="#ffffff",
-            height=150,
-            width=400,
-            drawing_mode="freedraw",
-            key=f"firma_tec_canvas_{accion_tipo}",
-        )
-        
-        if firma_tecnico_canvas.image_data is not None:
-            st.success("✅ Firma capturada correctamente")
-    
-    st.divider()
+    firma_tecnico_canvas = st_canvas(
+        fill_color="rgba(255, 255, 255, 1)",
+        stroke_width=2,
+        stroke_color="#000000",
+        background_color="#eeeeee",         # FONDO GRIS CLARO
+        height=150,
+        width=350,
+        drawing_mode="freedraw",
+        key=f"firma_tec_canvas_{accion_tipo}",
+    )
     
     st.divider()
     
@@ -343,7 +328,6 @@ def main():
             submit = st.form_submit_button(label='💾 Guardar Hoja de Vida Completa')
             
             if submit:
-                # Validaciones
                 errores = []
                 if not datos_formulario['nombre_equipo']:
                     errores.append("El Nombre del Equipo es obligatorio")
@@ -377,12 +361,13 @@ def main():
                         st.error(f"❌ {error}")
                 else:
                     try:
-                        # Guardar hoja de vida
+                        # SECCIÓN CORREGIDA PARA EVITAR ERROR EN BASE DE DATOS
                         cabecera_db = {k: v for k, v in datos_formulario.items() 
                                       if k not in ['lista_hardware', 'nombre_empleado', 'cc_empleado', 
                                                    'cargo_empleado', 'consentimiento_recibido', 
                                                    'responsabilidad_aceptada', 'nombre_tecnico', 
-                                                   'cc_tecnico', 'cargo_tecnico', 'id_tecnico_sistema', 'pin_tecnico']}
+                                                   'cc_tecnico', 'cargo_tecnico', 'id_tecnico_sistema', 'pin_tecnico',
+                                                   'firma_empleado_canvas', 'firma_tecnico_canvas']}
                         
                         id_version = insert_hoja_completa(
                             cabecera_db,
@@ -390,7 +375,6 @@ def main():
                             datos_formulario['id_tecnico_sistema']
                         )
                         
-                        # Guardar firma del empleado
                         guardar_firma_digital(
                             id_version,
                             datos_formulario['nombre_equipo'],
@@ -403,14 +387,13 @@ def main():
                             navegador=obtener_navegador()
                         )
                         
-                        # Guardar firma del técnico
                         guardar_firma_digital(
                             id_version,
                             datos_formulario['nombre_equipo'],
                             'tecnico',
                             datos_formulario['nombre_tecnico'],
                             datos_formulario['cc_tecnico'],
-                            True,  # El técnico acepta por defecto
+                            True,
                             True,
                             pin=datos_formulario['pin_tecnico'],
                             ip_dispositivo=obtener_ip_usuario(),
@@ -444,7 +427,6 @@ def main():
                     submit = st.form_submit_button(label='💾 Guardar Actualización')
                     
                     if submit:
-                        # Validaciones similares
                         errores = []
                         if datos_formulario['cc'] and not validar_documento(datos_formulario['cc']):
                             errores.append("Documento inválido")
@@ -462,11 +444,13 @@ def main():
                                 st.error(f"❌ {error}")
                         else:
                             try:
+                                # SECCIÓN CORREGIDA PARA EVITAR ERROR EN BASE DE DATOS
                                 cabecera_db = {k: v for k, v in datos_formulario.items() 
                                               if k not in ['lista_hardware', 'nombre_empleado', 'cc_empleado', 
                                                            'cargo_empleado', 'consentimiento_recibido', 
                                                            'responsabilidad_aceptada', 'nombre_tecnico', 
-                                                           'cc_tecnico', 'cargo_tecnico', 'id_tecnico_sistema', 'pin_tecnico']}
+                                                           'cc_tecnico', 'cargo_tecnico', 'id_tecnico_sistema', 'pin_tecnico',
+                                                           'firma_empleado_canvas', 'firma_tecnico_canvas']}
                                 
                                 id_version_nueva = actualizar_hoja_vida(
                                     busqueda,
@@ -525,7 +509,6 @@ def main():
                 else:
                     st.warning("No hay elementos de hardware registrados para este equipo.")
                 
-                # Mostrar firmas
                 st.divider()
                 st.subheader("🔐 Firmas Digitales")
                 firmas = get_firmas_equipo(busqueda, cab['id_version'])
@@ -550,11 +533,12 @@ def main():
         hojas = get_todas_hojas_actuales()
         if hojas:
             df_hojas = pd.DataFrame([dict(h) for h in hojas])
-            # Seleccionar columnas relevantes
             columnas_mostrar = ['nombre_equipo', 'nombre_usuario', 'area', 'estado', 
                                'sistema_operativo', 'c_ram', 'dir_ip', 'fecha_asignacion']
             df_hojas_display = df_hojas[[col for col in columnas_mostrar if col in df_hojas.columns]]
-            st.dataframe(df_hojas_display, use_container_width=True)
+            
+            # CORRECCIÓN DE WARNING width='stretch'
+            st.dataframe(df_hojas_display, width='stretch')
             
             csv = df_hojas_display.to_csv(index=False).encode('utf-8')
             st.download_button("📥 Descargar Inventario (CSV)", data=csv, 
@@ -626,7 +610,9 @@ def main():
             tecnicos = get_tecnicos_activos()
             if tecnicos:
                 df_tecn = pd.DataFrame([dict(t) for t in tecnicos])
-                st.dataframe(df_tecn[['nombre', 'documento', 'cargo', 'email']], use_container_width=True)
+                
+                # CORRECCIÓN DE WARNING width='stretch'
+                st.dataframe(df_tecn[['nombre', 'documento', 'cargo', 'email']], width='stretch')
             else:
                 st.info("No hay técnicos registrados.")
 
