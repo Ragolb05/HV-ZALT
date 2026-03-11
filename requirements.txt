@@ -1,7 +1,3 @@
 streamlit>=1.28.0
 pandas>=2.0.0
-<<<<<<< HEAD
 streamlit-drawable-canvas>=0.9.3
-=======
-streamlit-drawable-canvas>=0.9.3
->>>>>>> 27cb0949e05b6f3a35a08287d01234410231bd3e
